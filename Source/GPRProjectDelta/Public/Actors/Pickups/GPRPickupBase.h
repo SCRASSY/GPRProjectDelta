@@ -16,12 +16,20 @@ public:
 	// Sets default values for this actor's properties
 	AGPRPickupBase();
 
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<USceneComponent> RootSceneComponent;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> PickupStaticMesh;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
+	TObjectPtr<USoundCue> PickupSFX;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	virtual void Interact(AActor* InstigatedActor) override;
 
 public:
 	// Called every frame

@@ -9,6 +9,7 @@
 
 class AGPRWeaponBase;
 class AGPREquipmentBase;
+class AGPRPlayerCharacter;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class GPRPROJECTDELTA_API UGPRInventoryComponentBase : public UActorComponent
@@ -23,22 +24,40 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<AGPRPlayerCharacter> PlayerCharRef;
+
+	// Used to determine how many weapons the inventory component can hold
+	UPROPERTY(EditDefaultsOnly)
+	int32 MaxWeaponInventorySize = 0;
+
+	// Used to determine how much equipment the inventory component can hold
+	UPROPERTY(EditDefaultsOnly)
+	int32 MaxEquipmentInventorySize = 0;
+
+	// Used to determine how many items the inventory component can hold
+	UPROPERTY(EditDefaultsOnly)
+	int32 MaxResourceInventorySize = 0;
+
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	// Used to hold the player's weapons
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Inventory")
+	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 	TArray<TObjectPtr<AGPRWeaponBase>> WeaponInventoryArray;
 
 	// Used to hold the player's equipment like grenades
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Inventory")
+	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 	TArray<TObjectPtr<AGPREquipmentBase>> EquipmentInventoryArray;
 
 	// Used to hold the player's resources like weapon parts, currency, etc.
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Inventory")
+	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 	TArray<FGPRResourceDataBase> ResourceInventoryArray;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	int32 ActiveWeaponSlotIndex = 0;
 
 	// Used to add items to the player's inventory
 	UFUNCTION() void AddWeaponToInventory(AGPRWeaponBase* NewWeapon);
@@ -46,7 +65,16 @@ public:
 	UFUNCTION() void AddResourceToInventory(const FGPRResourceDataBase& NewResource);
 
 	// Used to check if the player can add items to their inventory
-	UFUNCTION() bool CanAddWeaponToInventory();
-	UFUNCTION() bool CanAddEquipmentToInventory();
-	UFUNCTION() bool CanAddResourceToInventory();
+	UFUNCTION() void CanAddWeaponToInventory(bool& bCanAddItem, int32& AvailableSlotIndex);
+	UFUNCTION() void CanAddEquipmentToInventory(bool& bCanAddItem, int32& AvailableSlotIndex);
+	UFUNCTION() void CanAddResourceToInventory(bool& bCanAddItem, int32& AvailableSlotIndex);
+
+	UFUNCTION()
+	void DropWeapon(AGPRWeaponBase* WeaponToRemove);
+
+	UFUNCTION()
+	void SetupCharacterReference();
+
+	UFUNCTION()
+	void SetInventoryArraySize();
 };

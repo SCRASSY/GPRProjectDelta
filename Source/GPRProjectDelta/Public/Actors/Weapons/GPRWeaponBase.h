@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "GPRWeaponBase.generated.h"
 
+class AGPRWeaponPickupBase;
+
 UCLASS(Abstract)
 class GPRPROJECTDELTA_API AGPRWeaponBase : public AActor
 {
@@ -25,6 +27,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UStaticMeshComponent> WeaponMagStaticMesh;
 
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSoftClassPtr<AGPRWeaponPickupBase> WeaponPickupClassToDrop;
+
+protected:
 	// A weapon must always have some sort of fire logic implemented
 	UFUNCTION()
 	virtual void FireWeapon() PURE_VIRTUAL(&AGPRWeaponBase::FireWeapon);

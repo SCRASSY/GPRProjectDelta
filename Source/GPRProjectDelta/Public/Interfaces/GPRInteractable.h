@@ -18,6 +18,5 @@ class GPRPROJECTDELTA_API IGPRInteractable
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interactable")
-	void Interact();
+	virtual void Interact(AActor* InstigatedActor) = 0;
 };
