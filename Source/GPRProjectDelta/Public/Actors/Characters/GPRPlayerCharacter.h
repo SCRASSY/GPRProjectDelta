@@ -114,6 +114,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float DefaultInteractableRadius = 2.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float InteractableLineTraceDistance = 500.0f;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TArray<TObjectPtr<AActor>> InteractableActorsInRangeArray;
 };

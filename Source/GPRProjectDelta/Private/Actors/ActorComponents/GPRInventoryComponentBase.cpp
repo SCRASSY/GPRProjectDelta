@@ -13,9 +13,6 @@ UGPRInventoryComponentBase::UGPRInventoryComponentBase()
 	// Set this component to be initialized when the game starts and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// Sets the size of the inventory for weapons, equipment & resources
-	SetInventoryArraySize();
 }
 
 
@@ -26,6 +23,9 @@ void UGPRInventoryComponentBase::BeginPlay()
 
 	// Sets up a reference to the character that owns this inventory component.
 	SetupCharacterReference();
+
+	// Sets the size of the inventory for weapons, equipment & resources
+	SetInventoryArraySize();
 }
 
 
@@ -87,7 +87,7 @@ void UGPRInventoryComponentBase::AddResourceToInventory(const FGPRResourceDataBa
 void UGPRInventoryComponentBase::CanAddWeaponToInventory(bool& bCanAddItem, int32& AvailableSlotIndex)
 {
 	// Loop through each element of the weapons inventory array
-	for (int i = 0; i < WeaponInventoryArray.Max(); ++i)
+	for (int i = 0; i < MaxWeaponInventorySize; ++i)
 	{
 		// Checks if the current element is empty.
 		if (!IsValid(WeaponInventoryArray[i]))

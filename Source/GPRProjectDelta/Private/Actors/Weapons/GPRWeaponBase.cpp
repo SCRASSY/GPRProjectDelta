@@ -11,13 +11,15 @@ AGPRWeaponBase::AGPRWeaponBase()
 	PrimaryActorTick.bCanEverTick = true;
 
 	WeaponBodyStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponBody"));
+	WeaponBodyStaticMesh->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 	RootComponent = WeaponBodyStaticMesh;
 
 	WeaponMagStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMag"));
 	WeaponMagStaticMesh->SetupAttachment(WeaponBodyStaticMesh);
+	WeaponMagStaticMesh->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 }
 
-// Called when the game starts or when spawned
+// Called when the game starts or when spawned,
 void AGPRWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();

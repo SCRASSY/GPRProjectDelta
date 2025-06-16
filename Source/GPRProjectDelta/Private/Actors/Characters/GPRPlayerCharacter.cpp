@@ -28,7 +28,7 @@ AGPRPlayerCharacter::AGPRPlayerCharacter()
 	PlayerInteractionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("PlayerInteractionSphere"));
 	PlayerInteractionSphere->SetupAttachment(GetCapsuleComponent());
 
-	PlayerInventoryComponent = CreateDefaultSubobject<UGPRInventoryComponentBase>(TEXT("PlayerInventory"));
+	PlayerInventoryComponent = CreateDefaultSubobject<UGPRInventoryComponentBase>(TEXT("PlayerInventoryComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -116,25 +116,48 @@ void AGPRPlayerCharacter::PlayerCrouch(const FInputActionValue& InputValue)
 
 void AGPRPlayerCharacter::PlayerInteract(const FInputActionValue& InputValue)
 {
-	for (TObjectPtr InteractableActor : InteractableActorsInRangeArray)
-	{
-		const FVector LocalDirectionToActor = (InteractableActor->GetActorLocation() - PlayerCameraComponent->GetComponentLocation()).GetSafeNormal();
-		const float LocalActorDotProductInDegrees = UKismetMathLibrary::DegAcos(GetInteractableActorDotProduct(LocalDirectionToActor));
+	// Line trace start & end values
+	const FVector LocalTraceStart = PlayerCameraComponent->GetComponentLocation();
+	const FVector LocalTraceEnd = LocalTraceStart + PlayerCameraComponent->GetForwardVector() * InteractableLineTraceDistance;
 
-		// Only allows the player to interact with an object if the object is within the players interactable radius
-		if (LocalActorDotProductInDegrees <= DefaultInteractableRadius)
+	// Line trace params
+	FCollisionQueryParams CollisionQueryParams;
+	CollisionQueryParams.AddIgnoredActor(this);
+	CollisionQueryParams.bTraceComplex = true;
+
+	// Line trace result
+	FHitResult HitResult;
+	if (GetWorld()->LineTraceSingleByChannel(HitResult, LocalTraceStart, LocalTraceEnd, ECC_Visibility, CollisionQueryParams))
+	{
+		if (IGPRInteractable* LocalInteractableActor = Cast<IGPRInteractable>(HitResult.GetActor()))
 		{
-			/* Checks if the actor implements the interactable interface,
-			 * this is done again to call the interact function & pass in a param */
-			if (IGPRInteractable* LocalInteractableActor = Cast<IGPRInteractable>(InteractableActor))
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Interacting with actor: %s"), *InteractableActor->GetName());
-				
-				// Calls the interact function on the interactable actor
-				LocalInteractableActor->Interact(this);
-			}
+			LocalInteractableActor->Interact(this);
 		}
 	}
+
+	DrawDebugLine(GetWorld(), LocalTraceStart, LocalTraceEnd, FColor::Red, false, 1.0f, 0, 0);
+	
+	// ------------------------------------------------------------------- Old dot product method
+	// for (TObjectPtr InteractableActor : InteractableActorsInRangeArray)
+	// {
+	// 	const FVector LocalDirectionToActor = (InteractableActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+	// 	const float LocalActorDotProductInDegrees = UKismetMathLibrary::DegAcos(GetInteractableActorDotProduct(LocalDirectionToActor));
+	//
+	// 	// Only allows the player to interact with an object if the object is within the players interactable radius
+	// 	if (LocalActorDotProductInDegrees <= DefaultInteractableRadius)
+	// 	{
+	// 		/* Checks if the actor implements the interactable interface,
+	// 		 * this is done again to call the interact function & pass in a param */
+	// 		if (IGPRInteractable* LocalInteractableActor = Cast<IGPRInteractable>(InteractableActor))
+	// 		{				
+	// 			// Calls the interact function on the interactable actor
+	// 			LocalInteractableActor->Interact(this);
+	//
+	// 			// If an object is interacted with, then this function will be terminated early
+	// 			return;
+	// 		}
+	// 	}
+	// }
 }
 
 void AGPRPlayerCharacter::SetupFunctionBindings()
