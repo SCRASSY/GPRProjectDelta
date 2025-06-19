@@ -57,6 +57,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
 	TObjectPtr<UInputAction> InteractAction;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
+	TObjectPtr<UInputAction> SwapWeaponsAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
+	TObjectPtr<UInputAction> AttackAction;
+
 	UFUNCTION()	void PlayerMove(const FInputActionValue& InputValue);
 	UFUNCTION()	void PlayerLook(const FInputActionValue& InputValue);
 	UFUNCTION()	void PlayerStartJump(const FInputActionValue& InputValue);
@@ -64,6 +70,9 @@ protected:
 	UFUNCTION()	void PlayerSprint(const FInputActionValue& InputValue);
 	UFUNCTION()	void PlayerCrouch(const FInputActionValue& InputValue);
 	UFUNCTION()	void PlayerInteract(const FInputActionValue& InputValue);
+	UFUNCTION()	void PlayerSwapWeapons(const FInputActionValue& InputValue);
+	UFUNCTION() void PlayerAttack(const FInputActionValue& InputValue);
+	UFUNCTION() void PlayerStopAttack(const FInputActionValue& InputValue);
 
 	UFUNCTION()
 	void SetupFunctionBindings();
@@ -94,6 +103,9 @@ public:
 
 	UFUNCTION()
 	UGPRInventoryComponentBase* GetPlayerInventoryComponent();
+
+	UFUNCTION()
+	UCameraComponent* GetPlayerCameraComponent();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bIsPlayerSprinting = false;

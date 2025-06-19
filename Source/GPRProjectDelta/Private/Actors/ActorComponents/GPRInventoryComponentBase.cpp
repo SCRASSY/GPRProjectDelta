@@ -49,6 +49,12 @@ void UGPRInventoryComponentBase::AddWeaponToInventory(AGPRWeaponBase* NewWeapon)
 	// If there is an available weapon slot, the interacted weapon is added to the weapon inventory.
 	if (bLocalCanAddItem)
 	{
+		// If the player does already have a weapon equipped, then it will be hidden.
+		if (IsValid(WeaponInventoryArray[ActiveWeaponSlotIndex]))
+		{
+			WeaponInventoryArray[ActiveWeaponSlotIndex]->SetActorHiddenInGame(true);
+		}
+		
 		// Adds the weapon to the player's weapon inventory
 		WeaponInventoryArray[LocalAvailableSlotIndex] = NewWeapon;
 

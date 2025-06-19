@@ -15,9 +15,6 @@ class GPRPROJECTDELTA_API AGPRPickupBase : public AActor, public IGPRInteractabl
 public:
 	// Sets default values for this actor's properties
 	AGPRPickupBase();
-
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<USceneComponent> RootSceneComponent;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> PickupStaticMesh;

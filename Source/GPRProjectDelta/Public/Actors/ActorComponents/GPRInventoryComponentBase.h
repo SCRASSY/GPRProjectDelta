@@ -27,6 +27,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<AGPRPlayerCharacter> PlayerCharRef;
 
+public:
 	// Used to determine how many weapons the inventory component can hold
 	UPROPERTY(EditDefaultsOnly)
 	int32 MaxWeaponInventorySize = 0;
@@ -38,8 +39,7 @@ protected:
 	// Used to determine how many items the inventory component can hold
 	UPROPERTY(EditDefaultsOnly)
 	int32 MaxResourceInventorySize = 0;
-
-public:
+	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;

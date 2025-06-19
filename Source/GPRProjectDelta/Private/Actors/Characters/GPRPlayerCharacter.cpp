@@ -11,7 +11,6 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Interfaces/GPRInteractable.h"
-#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AGPRPlayerCharacter::AGPRPlayerCharacter()
@@ -160,6 +159,66 @@ void AGPRPlayerCharacter::PlayerInteract(const FInputActionValue& InputValue)
 	// }
 }
 
+void AGPRPlayerCharacter::PlayerSwapWeapons(const FInputActionValue& InputValue)
+{
+	// Loops through each element inside the weapons inventory array to keep track of how many weapons the player has.
+	int32 LocalValidActorCounter = 0;	
+	for (AGPRWeaponBase* LocalWeapon : GetPlayerInventoryComponent()->WeaponInventoryArray)
+	{
+		// If the current element is valid, then the counter will be incremented.
+		if (IsValid(LocalWeapon))
+		{
+			LocalValidActorCounter++;
+		}
+	}
+
+	// Checks if the player has more than one weapon in their inventory.
+	if (LocalValidActorCounter > 1)
+	{
+		// Declares an alias to the inventory components active weapon slot index.
+		int32& LocalActiveSlotIndex = GetPlayerInventoryComponent()->ActiveWeaponSlotIndex;
+
+		// Declares variables used to hold the max weapon inventory size & the next active weapon slot index.
+		const int32 LocalMaxWeaponInventorySize = GetPlayerInventoryComponent()->MaxWeaponInventorySize;
+		const int32 LocalNewActiveSlot = (LocalActiveSlotIndex + 1) % LocalMaxWeaponInventorySize;
+
+		// Before swapping weapons, the current weapon will be hidden.
+		GetPlayerInventoryComponent()->WeaponInventoryArray[LocalActiveSlotIndex]->SetActorHiddenInGame(true);
+
+		// Changes the active weapon slot index to the next available slot using an alias variable.
+		LocalActiveSlotIndex = LocalNewActiveSlot;
+
+		// After swapping to the next available weapon, the now currently active weapon will be made visible.
+		GetPlayerInventoryComponent()->WeaponInventoryArray[LocalActiveSlotIndex]->SetActorHiddenInGame(false);
+	}
+}
+
+void AGPRPlayerCharacter::PlayerAttack(const FInputActionValue& InputValue)
+{
+	// Declares local variables for code readability
+	const int32 LocalActiveWeaponSlotIndex = GetPlayerInventoryComponent()->ActiveWeaponSlotIndex;
+	const TArray<TObjectPtr<AGPRWeaponBase>> LocalWeaponInventoryArray = GetPlayerInventoryComponent()->WeaponInventoryArray;
+
+	// Terminates this function early if there is no weapon available in the character's active weapon slot
+	if (!IsValid(LocalWeaponInventoryArray[LocalActiveWeaponSlotIndex])) return;
+
+	// Calls the fire logic on the character's currently active weapon
+	LocalWeaponInventoryArray[LocalActiveWeaponSlotIndex]->FireWeapon();
+}
+
+void AGPRPlayerCharacter::PlayerStopAttack(const FInputActionValue& InputValue)
+{
+	// Declares local variables for code readability
+	const int32 LocalActiveWeaponSlotIndex = GetPlayerInventoryComponent()->ActiveWeaponSlotIndex;
+	const TArray<TObjectPtr<AGPRWeaponBase>> LocalWeaponInventoryArray = GetPlayerInventoryComponent()->WeaponInventoryArray;
+
+	// Terminates this function early if there is no weapon available in the character's active weapon slot
+	if (!IsValid(LocalWeaponInventoryArray[LocalActiveWeaponSlotIndex])) return;
+
+	// Calls the fire logic on the character's currently active weapon
+	LocalWeaponInventoryArray[LocalActiveWeaponSlotIndex]->StopFireWeapon();
+}
+
 void AGPRPlayerCharacter::SetupFunctionBindings()
 {
 	PlayerInteractionSphere->OnComponentBeginOverlap.AddUniqueDynamic(this, &AGPRPlayerCharacter::OnComponentBeginOverlapInteractionSphere);
@@ -213,6 +272,9 @@ void AGPRPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AGPRPlayerCharacter::PlayerCrouch);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AGPRPlayerCharacter::PlayerSprint);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AGPRPlayerCharacter::PlayerInteract);
+		EnhancedInputComponent->BindAction(SwapWeaponsAction, ETriggerEvent::Started, this, &AGPRPlayerCharacter::PlayerSwapWeapons);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AGPRPlayerCharacter::PlayerAttack);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &AGPRPlayerCharacter::PlayerStopAttack);
 	}
 }
 
@@ -224,5 +286,10 @@ void AGPRPlayerCharacter::AttachAddedWeaponToCharacter(AGPRWeaponBase* NewWeapon
 UGPRInventoryComponentBase* AGPRPlayerCharacter::GetPlayerInventoryComponent()
 {
 	return PlayerInventoryComponent;
+}
+
+UCameraComponent* AGPRPlayerCharacter::GetPlayerCameraComponent()
+{
+	return PlayerCameraComponent;
 }
 
