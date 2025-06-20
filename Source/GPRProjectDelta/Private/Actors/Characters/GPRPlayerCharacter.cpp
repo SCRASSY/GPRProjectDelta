@@ -9,6 +9,7 @@
 #include "Actors/ActorComponents/GPRInventoryComponentBase.h"
 #include "Actors/Weapons/GPRWeaponBase.h"
 #include "Components/SphereComponent.h"
+#include "Core/Controllers/GPRPrimaryPlayerControllerBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Interfaces/GPRInteractable.h"
 
@@ -37,6 +38,9 @@ void AGPRPlayerCharacter::BeginPlay()
 
 	// Sets up function bindings
 	SetupFunctionBindings();
+
+	// Gets a reference to the owning player character controller
+	PlayerControllerRef = Cast<AGPRPrimaryPlayerControllerBase>(GetController());
 }
 
 void AGPRPlayerCharacter::PlayerMove(const FInputActionValue& InputValue)
@@ -126,37 +130,22 @@ void AGPRPlayerCharacter::PlayerInteract(const FInputActionValue& InputValue)
 
 	// Line trace result
 	FHitResult HitResult;
+	DrawDebugLine(GetWorld(), LocalTraceStart, LocalTraceEnd, FColor::Red, false, 1.0f, 0, 0);
 	if (GetWorld()->LineTraceSingleByChannel(HitResult, LocalTraceStart, LocalTraceEnd, ECC_Visibility, CollisionQueryParams))
 	{
+		// Checks if the hit actor inherits from the interactable interface
 		if (IGPRInteractable* LocalInteractableActor = Cast<IGPRInteractable>(HitResult.GetActor()))
 		{
+			// If this actor does inherit & implement this interface than the interact function on this hit actor will be called & executed
 			LocalInteractableActor->Interact(this);
+
+			// Gets this player's player controller & calls it's OnPlayerInteract event.
+			if (TObjectPtr<AGPRPrimaryPlayerControllerBase> LocalPlayerControllerRef = Cast<AGPRPrimaryPlayerControllerBase>(GetController()))
+			{
+				LocalPlayerControllerRef->OnPlayerInteract();
+			}
 		}
 	}
-
-	DrawDebugLine(GetWorld(), LocalTraceStart, LocalTraceEnd, FColor::Red, false, 1.0f, 0, 0);
-	
-	// ------------------------------------------------------------------- Old dot product method
-	// for (TObjectPtr InteractableActor : InteractableActorsInRangeArray)
-	// {
-	// 	const FVector LocalDirectionToActor = (InteractableActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-	// 	const float LocalActorDotProductInDegrees = UKismetMathLibrary::DegAcos(GetInteractableActorDotProduct(LocalDirectionToActor));
-	//
-	// 	// Only allows the player to interact with an object if the object is within the players interactable radius
-	// 	if (LocalActorDotProductInDegrees <= DefaultInteractableRadius)
-	// 	{
-	// 		/* Checks if the actor implements the interactable interface,
-	// 		 * this is done again to call the interact function & pass in a param */
-	// 		if (IGPRInteractable* LocalInteractableActor = Cast<IGPRInteractable>(InteractableActor))
-	// 		{				
-	// 			// Calls the interact function on the interactable actor
-	// 			LocalInteractableActor->Interact(this);
-	//
-	// 			// If an object is interacted with, then this function will be terminated early
-	// 			return;
-	// 		}
-	// 	}
-	// }
 }
 
 void AGPRPlayerCharacter::PlayerSwapWeapons(const FInputActionValue& InputValue)
@@ -190,6 +179,9 @@ void AGPRPlayerCharacter::PlayerSwapWeapons(const FInputActionValue& InputValue)
 
 		// After swapping to the next available weapon, the now currently active weapon will be made visible.
 		GetPlayerInventoryComponent()->WeaponInventoryArray[LocalActiveSlotIndex]->SetActorHiddenInGame(false);
+
+		// Updates the player's weapon UI when swapping weapons
+		PlayerControllerRef->OnPlayerSwappedWeapons();
 	}
 }
 
@@ -197,11 +189,11 @@ void AGPRPlayerCharacter::PlayerAttack(const FInputActionValue& InputValue)
 {
 	// Declares local variables for code readability
 	const int32 LocalActiveWeaponSlotIndex = GetPlayerInventoryComponent()->ActiveWeaponSlotIndex;
-	const TArray<TObjectPtr<AGPRWeaponBase>> LocalWeaponInventoryArray = GetPlayerInventoryComponent()->WeaponInventoryArray;
+	const TArray<TObjectPtr<AGPRWeaponBase>>& LocalWeaponInventoryArray = GetPlayerInventoryComponent()->WeaponInventoryArray;
 
 	// Terminates this function early if there is no weapon available in the character's active weapon slot
 	if (!IsValid(LocalWeaponInventoryArray[LocalActiveWeaponSlotIndex])) return;
-
+	
 	// Calls the fire logic on the character's currently active weapon
 	LocalWeaponInventoryArray[LocalActiveWeaponSlotIndex]->FireWeapon();
 }
@@ -217,6 +209,24 @@ void AGPRPlayerCharacter::PlayerStopAttack(const FInputActionValue& InputValue)
 
 	// Calls the fire logic on the character's currently active weapon
 	LocalWeaponInventoryArray[LocalActiveWeaponSlotIndex]->StopFireWeapon();
+}
+
+void AGPRPlayerCharacter::PlayerInventory(const FInputActionValue& InputValue)
+{
+	
+}
+
+void AGPRPlayerCharacter::PlayerReloadWeapon(const FInputActionValue& InputValue)
+{
+	// Declares local variables for code readability
+	const int32 LocalActiveWeaponSlotIndex = GetPlayerInventoryComponent()->ActiveWeaponSlotIndex;
+	const TArray<TObjectPtr<AGPRWeaponBase>> LocalWeaponInventoryArray = GetPlayerInventoryComponent()->WeaponInventoryArray;
+
+	// Terminates this function early if there is no weapon available in the character's active weapon slot
+	if (!IsValid(LocalWeaponInventoryArray[LocalActiveWeaponSlotIndex])) return;
+
+	// Calls the fire logic on the character's currently active weapon
+	LocalWeaponInventoryArray[LocalActiveWeaponSlotIndex]->ReloadWeapon();
 }
 
 void AGPRPlayerCharacter::SetupFunctionBindings()
@@ -275,6 +285,8 @@ void AGPRPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		EnhancedInputComponent->BindAction(SwapWeaponsAction, ETriggerEvent::Started, this, &AGPRPlayerCharacter::PlayerSwapWeapons);
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AGPRPlayerCharacter::PlayerAttack);
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &AGPRPlayerCharacter::PlayerStopAttack);
+		EnhancedInputComponent->BindAction(InventoryAction, ETriggerEvent::Started, this, &AGPRPlayerCharacter::PlayerInventory);
+		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AGPRPlayerCharacter::PlayerReloadWeapon);
 	}
 }
 
@@ -292,4 +304,3 @@ UCameraComponent* AGPRPlayerCharacter::GetPlayerCameraComponent()
 {
 	return PlayerCameraComponent;
 }
-

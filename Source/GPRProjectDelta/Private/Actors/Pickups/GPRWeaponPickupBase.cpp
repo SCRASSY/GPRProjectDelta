@@ -34,6 +34,9 @@ void AGPRWeaponPickupBase::Interact(AActor* InstigatedActor)
 		// Spawns a weapon into the world, which will be instantly attached to the player character who picked-ip this weapon
 		TObjectPtr<AGPRWeaponBase> LocalSpawnedWeapon = GetWorld()->SpawnActor<AGPRWeaponBase>(LocalWeaponToSpawn, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 
+		// Sets the spawned weapons owning player to be the player which picked up this weapon
+		LocalSpawnedWeapon->OwningPlayerCharRef = LocalPlayerCharRef;
+		
 		// Adds this spawned weapon to the player's inventory
 		LocalPlayerCharRef->GetPlayerInventoryComponent()->AddWeaponToInventory(LocalSpawnedWeapon);
 

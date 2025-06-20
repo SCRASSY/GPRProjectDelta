@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "GPRWeaponBase.generated.h"
 
+class AGPRPrimaryPlayerControllerBase;
 class AGPRPlayerCharacter;
 class UGPRWeaponStatsDataAssetBase;
 class AGPRWeaponPickupBase;
@@ -22,8 +23,11 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
+	virtual void OnConstruction(const FTransform& Transform) override;
 
-	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UStaticMeshComponent> WeaponBodyStaticMesh;
@@ -38,29 +42,34 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSoftClassPtr<AGPRWeaponPickupBase> WeaponPickupClassToDrop;
 	
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 CurrentMagAmmo;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 CurrentReserveAmmo;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TObjectPtr<UGPRWeaponStatsDataAssetBase> WeaponData;
 
-	UPROPERTY()
-	TObjectPtr<AGPRPlayerCharacter> OwningPlayerCharRef;
+	// References to the owning players character and controller
+	UPROPERTY() TObjectPtr<AGPRPlayerCharacter> OwningPlayerCharRef;
+	UPROPERTY() TObjectPtr<AGPRPrimaryPlayerControllerBase> OwningPlayerControllerRef;
+	
+	FTimerHandle WeaponFireTimerHandle;
+
+	// Keeps track of if the player's currently active weapon is being fired
+	bool bIsFiring = false;
 	
 	// A weapon must always have some sort of fire logic implemented
 	virtual void FireWeapon();
 
+	// Used for firing the weapon
 	void FireWeaponSemi();
 	void FireWeaponBurst();
 	void FireWeaponAuto();
 
+	// Stops the weapon from firing only when using burst or auto
 	void StopFireWeapon();
-
-	UFUNCTION()
-	void SetupPlayerReference();
 
 	// Not all weapons will have a reload option. Example, energy weapons which overheat or melee weapons
 	UFUNCTION()
@@ -69,7 +78,4 @@ public:
 	// Used to check if the weapon can be reloaded using the reserve ammo
 	UFUNCTION()
 	virtual bool CanReloadWeapon();
-	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 };

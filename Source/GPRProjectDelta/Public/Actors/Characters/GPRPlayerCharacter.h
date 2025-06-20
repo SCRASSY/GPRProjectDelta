@@ -6,13 +6,14 @@
 #include "GameFramework/Character.h"
 #include "GPRPlayerCharacter.generated.h"
 
+struct FInputActionValue;
 class AGPRWeaponBase;
 class USphereComponent;
-struct FInputActionValue;
 class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
 class UGPRInventoryComponentBase;
+class AGPRPrimaryPlayerControllerBase;
 
 UCLASS()
 class GPRPROJECTDELTA_API AGPRPlayerCharacter : public ACharacter
@@ -63,6 +64,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
 	TObjectPtr<UInputAction> AttackAction;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
+	TObjectPtr<UInputAction> InventoryAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
+	TObjectPtr<UInputAction> ReloadAction;
+
 	UFUNCTION()	void PlayerMove(const FInputActionValue& InputValue);
 	UFUNCTION()	void PlayerLook(const FInputActionValue& InputValue);
 	UFUNCTION()	void PlayerStartJump(const FInputActionValue& InputValue);
@@ -73,12 +80,14 @@ protected:
 	UFUNCTION()	void PlayerSwapWeapons(const FInputActionValue& InputValue);
 	UFUNCTION() void PlayerAttack(const FInputActionValue& InputValue);
 	UFUNCTION() void PlayerStopAttack(const FInputActionValue& InputValue);
+	UFUNCTION() void PlayerInventory(const FInputActionValue& InputValue);
+	UFUNCTION() void PlayerReloadWeapon(const FInputActionValue& InputValue);
 
 	UFUNCTION()
 	void SetupFunctionBindings();
 
 	UFUNCTION()
-	const float GetInteractableActorDotProduct(const FVector& DirectionToActor); 
+	const float GetInteractableActorDotProduct(const FVector& DirectionToActor);
 
 #pragma region // Function Bindings
 	UFUNCTION()
@@ -131,4 +140,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TArray<TObjectPtr<AActor>> InteractableActorsInRangeArray;
+
+	UPROPERTY()
+	TObjectPtr<AGPRPrimaryPlayerControllerBase> PlayerControllerRef;
 };

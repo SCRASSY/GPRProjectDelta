@@ -18,4 +18,14 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
 	TObjectPtr<UInputMappingContext> InputMappingContext;
+
+public:
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnPlayerInteract();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnPlayerAttack();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnPlayerSwappedWeapons();
 };

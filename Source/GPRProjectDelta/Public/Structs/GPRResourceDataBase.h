@@ -20,6 +20,9 @@ struct GPRPROJECTDELTA_API FGPRResourceDataBase : public FTableRowBase
 	TSoftObjectPtr<UTexture2D> ResourceIcon;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSoftObjectPtr<UStaticMesh> ResourceStaticMesh;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 ResourceQuantity;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
