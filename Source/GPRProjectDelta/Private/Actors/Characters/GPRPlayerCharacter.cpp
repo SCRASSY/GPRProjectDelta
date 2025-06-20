@@ -7,6 +7,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Actors/ActorComponents/GPRInventoryComponentBase.h"
+#include "Actors/Equipment/GPREquipmentBase.h"
 #include "Actors/Weapons/GPRWeaponBase.h"
 #include "Components/SphereComponent.h"
 #include "Core/Controllers/GPRPrimaryPlayerControllerBase.h"
@@ -229,6 +230,53 @@ void AGPRPlayerCharacter::PlayerReloadWeapon(const FInputActionValue& InputValue
 	LocalWeaponInventoryArray[LocalActiveWeaponSlotIndex]->ReloadWeapon();
 }
 
+void AGPRPlayerCharacter::PlayerUseEquipment(const FInputActionValue& InputValue)
+{
+	if (!GetPlayerInventoryComponent()) return;
+
+	const int32 LocalActiveEquipmentSlotIndex = GetPlayerInventoryComponent()->ActiveEquipmentSlotIndex;
+	
+	// Gets the first array element equipment for now
+	if (AGPREquipmentBase* LocalSelectedEquipment = GetPlayerInventoryComponent()->EquipmentInventoryArray[LocalActiveEquipmentSlotIndex])
+	{
+		// Uses this equipment
+		LocalSelectedEquipment->UseEquipment(this);
+	}
+
+	
+}
+
+void AGPRPlayerCharacter::PlayerSwapEquipment(const FInputActionValue& InputValue)
+{
+	// Loops through each element inside the equipment inventory array to keep track of how much equipment the player has.
+	int32 LocalValidActorCounter = 0;	
+	for (AGPREquipmentBase* LocalEquipment : GetPlayerInventoryComponent()->EquipmentInventoryArray)
+	{
+		// If the current element is valid, then the counter will be incremented.
+		if (LocalEquipment)
+		{
+			LocalValidActorCounter++;
+		}
+	}
+
+	// Checks if the player has more than one equipment in their inventory
+	if (LocalValidActorCounter > 1)
+	{
+		// Declares an alias to the inventory components active equipment slot index.
+		int32& LocalActiveSlotIndex = GetPlayerInventoryComponent()->ActiveEquipmentSlotIndex;
+
+		// Declares variables used to hold the max weapon inventory size & the next active weapon slot index.
+		const int32 LocalMaxEquipmentInventorySize = GetPlayerInventoryComponent()->MaxEquipmentInventorySize;
+		const int32 LocalNewActiveSlot = (LocalActiveSlotIndex + 1) % LocalMaxEquipmentInventorySize;;
+
+		// Changes the active weapon slot index to the next available slot using an alias variable.
+		LocalActiveSlotIndex = LocalNewActiveSlot;
+
+		// Update UI for equipment
+		
+	}
+}
+
 void AGPRPlayerCharacter::SetupFunctionBindings()
 {
 	PlayerInteractionSphere->OnComponentBeginOverlap.AddUniqueDynamic(this, &AGPRPlayerCharacter::OnComponentBeginOverlapInteractionSphere);
@@ -287,6 +335,8 @@ void AGPRPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &AGPRPlayerCharacter::PlayerStopAttack);
 		EnhancedInputComponent->BindAction(InventoryAction, ETriggerEvent::Started, this, &AGPRPlayerCharacter::PlayerInventory);
 		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AGPRPlayerCharacter::PlayerReloadWeapon);
+		EnhancedInputComponent->BindAction(UseEquipmentAction, ETriggerEvent::Started, this, &AGPRPlayerCharacter::PlayerUseEquipment);
+		EnhancedInputComponent->BindAction(SwapEquipmentAction, ETriggerEvent::Started, this, &AGPRPlayerCharacter::PlayerSwapEquipment);
 	}
 }
 
@@ -303,4 +353,12 @@ UGPRInventoryComponentBase* AGPRPlayerCharacter::GetPlayerInventoryComponent()
 UCameraComponent* AGPRPlayerCharacter::GetPlayerCameraComponent()
 {
 	return PlayerCameraComponent;
+}
+
+void AGPRPlayerCharacter::ApplyHealthToCharacter(float HealthAmount)
+{
+	// Updates the player's health & clamps it to the max float value of the player's max health var
+	CurrentPlayerHealth = FMath::Clamp(CurrentPlayerHealth + HealthAmount, 0.0f, MaxPlayerHealth);
+
+	// Update UI
 }

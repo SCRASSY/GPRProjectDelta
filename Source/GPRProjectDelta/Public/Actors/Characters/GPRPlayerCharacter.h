@@ -70,6 +70,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
 	TObjectPtr<UInputAction> ReloadAction;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
+	TObjectPtr<UInputAction> UseEquipmentAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
+	TObjectPtr<UInputAction> SwapEquipmentAction;
+
+	// Enhanced input function bindings
 	UFUNCTION()	void PlayerMove(const FInputActionValue& InputValue);
 	UFUNCTION()	void PlayerLook(const FInputActionValue& InputValue);
 	UFUNCTION()	void PlayerStartJump(const FInputActionValue& InputValue);
@@ -82,6 +89,8 @@ protected:
 	UFUNCTION() void PlayerStopAttack(const FInputActionValue& InputValue);
 	UFUNCTION() void PlayerInventory(const FInputActionValue& InputValue);
 	UFUNCTION() void PlayerReloadWeapon(const FInputActionValue& InputValue);
+	UFUNCTION() void PlayerUseEquipment(const FInputActionValue& InputValue);
+	UFUNCTION() void PlayerSwapEquipment(const FInputActionValue& InputValue);
 
 	UFUNCTION()
 	void SetupFunctionBindings();
@@ -116,6 +125,8 @@ public:
 	UFUNCTION()
 	UCameraComponent* GetPlayerCameraComponent();
 
+	void ApplyHealthToCharacter(float HealthAmount);
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bIsPlayerSprinting = false;
 
@@ -131,6 +142,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float DefaultCrouchSpeed = 200.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float MaxPlayerHealth = 100.0f;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float CurrentPlayerHealth = MaxPlayerHealth;
+
 	// The angle at which the player needs to be looking at an object to interact with it
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float DefaultInteractableRadius = 2.0f;
@@ -141,6 +158,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TArray<TObjectPtr<AActor>> InteractableActorsInRangeArray;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<AGPRPrimaryPlayerControllerBase> PlayerControllerRef;
 };

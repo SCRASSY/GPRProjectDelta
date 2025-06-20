@@ -6,6 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "GPREquipmentBase.generated.h"
 
+class AGPRPlayerCharacter;
+class UGPREquipmentDataAssetBase;
+
 UCLASS()
 class GPRPROJECTDELTA_API AGPREquipmentBase : public AActor
 {
@@ -19,7 +22,17 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void OnConstruction(const FTransform& Transform) override;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UStaticMeshComponent> EquipmentStaticMesh;
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	virtual void UseEquipment(AGPRPlayerCharacter* UsingPlayerCharacter);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TObjectPtr<UGPREquipmentDataAssetBase> EquipmentData;
 };

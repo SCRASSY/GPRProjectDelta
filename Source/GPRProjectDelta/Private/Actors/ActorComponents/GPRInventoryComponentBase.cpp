@@ -85,9 +85,35 @@ void UGPRInventoryComponentBase::AddEquipmentToInventory(AGPREquipmentBase* NewE
 	
 }
 
-void UGPRInventoryComponentBase::AddResourceToInventory(const FGPRResourceDataBase& NewResource)
+void UGPRInventoryComponentBase::AddResourceToInventory(FGPRResourceDataBase& NewResource)
 {
-	
+	// Declares 2 variables to determine if the player can add the resource to their inventory
+	bool LocalCanAddItem = false;
+	int32 LocalSlotIndex = 0;
+
+	// Checks if the player can add the resource to their inventory.
+	CanAddResourceToInventory(LocalCanAddItem, LocalSlotIndex, NewResource);
+
+	// Checks if the player can add the resource to their inventory, otherwise terminate this function early.
+	if (!LocalCanAddItem) return;
+
+	UE_LOG(LogTemp, Warning, TEXT("Adding Item"));
+
+	// Can this new item be added to an already existing item in the inventory?
+	if (ResourceInventoryArray[LocalSlotIndex].ResourceName == NewResource.ResourceName)
+	{
+		// If so, then the quantity of the existing item will be increased by 1.
+		ResourceInventoryArray[LocalSlotIndex].ResourceQuantity++;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Adding New Item"));
+		
+		// Otherwise, the new item will be added to the inventory.
+		ResourceInventoryArray[LocalSlotIndex] = NewResource;
+
+		UE_LOG(LogTemp, Warning, TEXT("Item Name: %s"), *ResourceInventoryArray[LocalSlotIndex].ResourceName.ToString());
+	}
 }
 
 void UGPRInventoryComponentBase::CanAddWeaponToInventory(bool& bCanAddItem, int32& AvailableSlotIndex)
@@ -114,9 +140,34 @@ void UGPRInventoryComponentBase::CanAddEquipmentToInventory(bool& bCanAddItem, i
 	
 }
 
-void UGPRInventoryComponentBase::CanAddResourceToInventory(bool& bCanAddItem, int32& AvailableSlotIndex)
+void UGPRInventoryComponentBase::CanAddResourceToInventory(bool& bCanAddItem, int32& AvailableSlotIndex, const FGPRResourceDataBase& ResourceToAdd)
 {
-	
+	// Loops through the resource inventory array
+	for (int i = 0; i < ResourceInventoryArray.Num(); ++i)
+	{
+		/* Checks if there is already a resource of the same type in this slot.
+		 * This is because if there is already a resource of the same type,
+		 * then this resource should be added to that item's quantity
+		 * rather than taking up a new slot. */
+		if (ResourceInventoryArray[i].ResourceName == ResourceToAdd.ResourceName)
+		{
+			bCanAddItem = true;
+			AvailableSlotIndex = i;
+			return;
+		}
+		
+		// Otherwise check if this slot is empty
+		if (ResourceInventoryArray[i].ResourceName == "None")
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Resource Inventory Slot %d is empty"), i);
+			bCanAddItem = true;
+			AvailableSlotIndex = i;
+			return;
+		}
+	}
+
+	// Cannot add an item to this inventory
+	bCanAddItem = false;
 }
 
 void UGPRInventoryComponentBase::DropWeapon(AGPRWeaponBase* WeaponToRemove)

@@ -59,15 +59,18 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	int32 ActiveWeaponSlotIndex = 0;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	int32 ActiveEquipmentSlotIndex = 0;
+
 	// Used to add items to the player's inventory
 	UFUNCTION() void AddWeaponToInventory(AGPRWeaponBase* NewWeapon);
 	UFUNCTION() void AddEquipmentToInventory(AGPREquipmentBase* NewEquipment);
-	UFUNCTION() void AddResourceToInventory(const FGPRResourceDataBase& NewResource);
+	UFUNCTION() void AddResourceToInventory(FGPRResourceDataBase& NewResource);
 
 	// Used to check if the player can add items to their inventory
 	UFUNCTION() void CanAddWeaponToInventory(bool& bCanAddItem, int32& AvailableSlotIndex);
 	UFUNCTION() void CanAddEquipmentToInventory(bool& bCanAddItem, int32& AvailableSlotIndex);
-	UFUNCTION() void CanAddResourceToInventory(bool& bCanAddItem, int32& AvailableSlotIndex);
+	UFUNCTION() void CanAddResourceToInventory(bool& bCanAddItem, int32& AvailableSlotIndex, const FGPRResourceDataBase& ResourceToAdd);
 
 	UFUNCTION()
 	void DropWeapon(AGPRWeaponBase* WeaponToRemove);
