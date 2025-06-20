@@ -70,7 +70,7 @@ public:
 	// Used to check if the player can add items to their inventory
 	UFUNCTION() void CanAddWeaponToInventory(bool& bCanAddItem, int32& AvailableSlotIndex);
 	UFUNCTION() void CanAddEquipmentToInventory(bool& bCanAddItem, int32& AvailableSlotIndex);
-	UFUNCTION() void CanAddResourceToInventory(bool& bCanAddItem, int32& AvailableSlotIndex, const FGPRResourceDataBase& ResourceToAdd);
+	UFUNCTION() void CanAddResourceToInventory(bool& bCanAddItem, bool& bCanStackItem, int32& AvailableSlotIndex, const FGPRResourceDataBase& ResourceToAdd);
 
 	UFUNCTION()
 	void DropWeapon(AGPRWeaponBase* WeaponToRemove);

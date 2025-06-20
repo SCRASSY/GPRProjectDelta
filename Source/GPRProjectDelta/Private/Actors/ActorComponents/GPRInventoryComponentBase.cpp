@@ -129,32 +129,31 @@ void UGPRInventoryComponentBase::AddEquipmentToInventory(AGPREquipmentBase* NewE
 
 void UGPRInventoryComponentBase::AddResourceToInventory(FGPRResourceDataBase& NewResource)
 {
-	// Declares 2 variables to determine if the player can add the resource to their inventory
-	bool LocalCanAddItem = false;
+	// Declares 3 variables to determine if the player can add the resource to their inventory
+	bool bLocalCanAddItem = false;
+	bool bLocalCanStackItem = false;
 	int32 LocalSlotIndex = 0;
 
 	// Checks if the player can add the resource to their inventory.
-	CanAddResourceToInventory(LocalCanAddItem, LocalSlotIndex, NewResource);
+	CanAddResourceToInventory(bLocalCanAddItem, bLocalCanStackItem, LocalSlotIndex, NewResource);
 
 	// Checks if the player can add the resource to their inventory, otherwise terminate this function early.
-	if (!LocalCanAddItem) return;
-
-	UE_LOG(LogTemp, Warning, TEXT("Adding Item"));
-
-	// Can this new item be added to an already existing item in the inventory?
-	if (ResourceInventoryArray[LocalSlotIndex].ResourceName == NewResource.ResourceName)
+	if (!bLocalCanAddItem) return;
+	
+	// Can this new item be added to an already existing item in the inventory & is that this item stackable?
+	if (bLocalCanAddItem)
 	{
-		// If so, then the quantity of the existing item will be increased by 1.
-		ResourceInventoryArray[LocalSlotIndex].ResourceQuantity++;
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Adding New Item"));
-		
-		// Otherwise, the new item will be added to the inventory.
-		ResourceInventoryArray[LocalSlotIndex] = NewResource;
-
-		UE_LOG(LogTemp, Warning, TEXT("Item Name: %s"), *ResourceInventoryArray[LocalSlotIndex].ResourceName.ToString());
+		// Can this item be stacked with another item of the same type
+		if (bLocalCanStackItem)
+		{
+			// If so, then the quantity of the existing item will be increased by 1.
+			ResourceInventoryArray[LocalSlotIndex].ResourceQuantity++;
+		}
+		else
+		{
+			// Otherwise, the new item will be added to the inventory.
+			ResourceInventoryArray[LocalSlotIndex] = NewResource;
+		}
 	}
 }
 
@@ -196,18 +195,23 @@ void UGPRInventoryComponentBase::CanAddEquipmentToInventory(bool& bCanAddItem, i
 	bCanAddItem = false;
 }
 
-void UGPRInventoryComponentBase::CanAddResourceToInventory(bool& bCanAddItem, int32& AvailableSlotIndex, const FGPRResourceDataBase& ResourceToAdd)
+void UGPRInventoryComponentBase::CanAddResourceToInventory(bool& bCanAddItem, bool& bCanStackItem, int32& AvailableSlotIndex, const FGPRResourceDataBase& ResourceToAdd)
 {
 	// Loops through the resource inventory array
 	for (int i = 0; i < ResourceInventoryArray.Num(); ++i)
 	{
+		const bool bLocalFoundExistingItem = ResourceInventoryArray[i].ResourceName == ResourceToAdd.ResourceName;
+		const bool bLocalIsItemStackable = ResourceToAdd.bIsStackable;
+		const bool bLocalIsFoundItemFull = ResourceInventoryArray[i].ResourceQuantity >= ResourceToAdd.ResourceMaxStackSize;
+		
 		/* Checks if there is already a resource of the same type in this slot.
 		 * This is because if there is already a resource of the same type,
 		 * then this resource should be added to that item's quantity
 		 * rather than taking up a new slot. */
-		if (ResourceInventoryArray[i].ResourceName == ResourceToAdd.ResourceName)
+		if (bLocalFoundExistingItem && bLocalIsItemStackable && !bLocalIsFoundItemFull)
 		{
 			bCanAddItem = true;
+			bCanStackItem = true;
 			AvailableSlotIndex = i;
 			return;
 		}
@@ -215,8 +219,8 @@ void UGPRInventoryComponentBase::CanAddResourceToInventory(bool& bCanAddItem, in
 		// Otherwise check if this slot is empty
 		if (ResourceInventoryArray[i].ResourceName == "None")
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Resource Inventory Slot %d is empty"), i);
 			bCanAddItem = true;
+			bCanStackItem = false;
 			AvailableSlotIndex = i;
 			return;
 		}

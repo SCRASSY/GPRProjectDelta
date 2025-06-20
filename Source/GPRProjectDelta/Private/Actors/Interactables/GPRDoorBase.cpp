@@ -56,6 +56,14 @@ void AGPRDoorBase::Interact(AActor* InstigatedActor)
 					// If the player does have enough gold, then the door will open.
 					LocalResourceData.ResourceQuantity -= 5;
 
+					// If there is no items left of this type in the slot then this item is now gone
+					if (LocalResourceData.ResourceQuantity <= 0)
+					{
+						// Creates a default struct with default values & assigns it to the "destroyed" struct
+						FGPRResourceDataBase LocalDefaultStruct{};
+						LocalResourceData = LocalDefaultStruct;
+					}
+
 					// Gets a reference to the player's player controller
 					if (TObjectPtr<AGPRPrimaryPlayerControllerBase> LocalPlayerControllerRef = Cast<AGPRPrimaryPlayerControllerBase>(GetWorld()->GetFirstPlayerController()))
 					{
