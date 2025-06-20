@@ -31,14 +31,6 @@ void UGPRInventoryComponentBase::BeginPlay()
 	SetInventoryArraySize();
 }
 
-
-// Called every frame
-void UGPRInventoryComponentBase::TickComponent(float DeltaTime, ELevelTick TickType,
-                                           FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-}
-
 void UGPRInventoryComponentBase::AddWeaponToInventory(AGPRWeaponBase* NewWeapon)
 {
 	/* Declares 2 variables to determine if there is an available slot in the inventory &

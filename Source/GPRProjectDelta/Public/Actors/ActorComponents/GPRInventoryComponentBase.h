@@ -39,10 +39,6 @@ public:
 	// Used to determine how many items the inventory component can hold
 	UPROPERTY(EditDefaultsOnly)
 	int32 MaxResourceInventorySize = 0;
-	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	// Used to hold the player's weapons
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
@@ -70,7 +66,8 @@ public:
 	// Used to check if the player can add items to their inventory
 	UFUNCTION() void CanAddWeaponToInventory(bool& bCanAddItem, int32& AvailableSlotIndex);
 	UFUNCTION() void CanAddEquipmentToInventory(bool& bCanAddItem, int32& AvailableSlotIndex);
-	UFUNCTION() void CanAddResourceToInventory(bool& bCanAddItem, bool& bCanStackItem, int32& AvailableSlotIndex, const FGPRResourceDataBase& ResourceToAdd);
+	UFUNCTION() void CanAddResourceToInventory(bool& bCanAddItem, bool& bCanStackItem,
+		int32& AvailableSlotIndex, const FGPRResourceDataBase& ResourceToAdd);
 
 	UFUNCTION()
 	void DropWeapon(AGPRWeaponBase* WeaponToRemove);
