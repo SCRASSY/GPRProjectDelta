@@ -76,6 +76,9 @@ public:
 	void DropWeapon(AGPRWeaponBase* WeaponToRemove);
 
 	UFUNCTION()
+	void DropEquipment(AGPREquipmentBase* EquipmentToRemove);
+
+	UFUNCTION()
 	void SetupCharacterReference();
 
 	UFUNCTION()

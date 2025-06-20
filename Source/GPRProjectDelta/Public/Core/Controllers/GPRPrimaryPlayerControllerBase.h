@@ -30,5 +30,14 @@ public:
 	void OnPlayerSwappedWeapons();
 
 	UFUNCTION(BlueprintImplementableEvent)
+	void OnPlayerSwappedEquipment();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnPlayerUsedEquipment();
+
+	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateResourcePickupUI();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateEquipmentPickupUI();
 };

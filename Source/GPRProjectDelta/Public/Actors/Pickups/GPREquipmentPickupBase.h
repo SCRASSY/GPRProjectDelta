@@ -6,6 +6,9 @@
 #include "GPRPickupBase.h"
 #include "GPREquipmentPickupBase.generated.h"
 
+class AGPREquipmentBase;
+class AGPRPlayerCharacter;
+
 UCLASS()
 class GPRPROJECTDELTA_API AGPREquipmentPickupBase : public AGPRPickupBase
 {
@@ -22,4 +25,9 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	virtual void Interact(AActor* InstigatedActor) override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSoftClassPtr<AGPREquipmentBase> EquipmentClassToSpawn;
 };

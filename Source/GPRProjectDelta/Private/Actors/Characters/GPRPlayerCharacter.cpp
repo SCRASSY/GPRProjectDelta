@@ -241,9 +241,24 @@ void AGPRPlayerCharacter::PlayerUseEquipment(const FInputActionValue& InputValue
 	{
 		// Uses this equipment
 		LocalSelectedEquipment->UseEquipment(this);
+
+		// Removes the reference to this used item as it is destroyed
+		GetPlayerInventoryComponent()->EquipmentInventoryArray[LocalActiveEquipmentSlotIndex] = nullptr;
 	}
 
-	
+	// Loops through the equipment inventory array to see which next slot can be the active slot
+	for (int i = 0; i < GetPlayerInventoryComponent()->EquipmentInventoryArray.Num(); i++)
+	{
+		// If this slot is valid, then it will be the next active equipment slot
+		if (GetPlayerInventoryComponent()->EquipmentInventoryArray[i])
+		{
+			GetPlayerInventoryComponent()->ActiveEquipmentSlotIndex = i;
+			break;
+		}
+	}
+
+	// Updates the UI for equipment when using
+	PlayerControllerRef->OnPlayerUsedEquipment();
 }
 
 void AGPRPlayerCharacter::PlayerSwapEquipment(const FInputActionValue& InputValue)
@@ -272,8 +287,8 @@ void AGPRPlayerCharacter::PlayerSwapEquipment(const FInputActionValue& InputValu
 		// Changes the active weapon slot index to the next available slot using an alias variable.
 		LocalActiveSlotIndex = LocalNewActiveSlot;
 
-		// Update UI for equipment
-		
+		// Update UI for equipment when swapping
+		PlayerControllerRef->OnPlayerSwappedEquipment();
 	}
 }
 

@@ -2,12 +2,9 @@
 
 
 #include "Actors/Equipment/GPRHealthPotionBase.h"
-
 #include "Actors/ActorComponents/GPRInventoryComponentBase.h"
 #include "Actors/Characters/GPRPlayerCharacter.h"
 #include "DataAssets/GPRHealingPotionDataAssetBase.h"
-#include "Slate/SGameLayerManager.h"
-
 
 // Sets default values
 AGPRHealthPotionBase::AGPRHealthPotionBase()
@@ -20,7 +17,6 @@ AGPRHealthPotionBase::AGPRHealthPotionBase()
 void AGPRHealthPotionBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -38,12 +34,6 @@ void AGPRHealthPotionBase::UseEquipment(AGPRPlayerCharacter* UsingPlayerCharacte
 	{
 		// Applies health to the player character
 		UsingPlayerCharacter->ApplyHealthToCharacter(PotionData->HealingAmount);
-
-		// Gets a reference to the player character's inventory component & removes this potion from inventory
-		if (UGPRInventoryComponentBase* LocalInventoryComp = UsingPlayerCharacter->GetPlayerInventoryComponent())
-		{
-			LocalInventoryComp->EquipmentInventoryArray.Remove(this);
-		}
 
 		// 3. Destroy the potion actor
 		this->Destroy();

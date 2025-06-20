@@ -3,10 +3,13 @@
 
 #include "Actors/ActorComponents/GPRInventoryComponentBase.h"
 #include "Actors/Characters/GPRPlayerCharacter.h"
+#include "Actors/Equipment/GPREquipmentBase.h"
+#include "Actors/Pickups/GPREquipmentPickupBase.h"
 #include "Actors/Weapons/GPRWeaponBase.h"
 #include "Actors/Pickups/GPRWeaponPickupBase.h"
 
 
+class AGPREquipmentPickupBase;
 // Sets default values for this component's properties
 UGPRInventoryComponentBase::UGPRInventoryComponentBase()
 {
@@ -82,7 +85,46 @@ void UGPRInventoryComponentBase::AddWeaponToInventory(AGPRWeaponBase* NewWeapon)
 
 void UGPRInventoryComponentBase::AddEquipmentToInventory(AGPREquipmentBase* NewEquipment)
 {
-	
+	/* Declares 2 variables to determine if there is an available slot in the inventory &
+	 * if there is an available slot, the index of the available slot.*/
+	bool bLocalCanAddItem = false;
+	int32 LocalAvailableSlotIndex = 0;
+
+	// Checks the weapon inventory array to see if there is an available slot.
+	CanAddEquipmentToInventory(bLocalCanAddItem, LocalAvailableSlotIndex);
+
+	// If there is an available weapon slot, the interacted weapon is added to the weapon inventory.
+	if (bLocalCanAddItem)
+	{		
+		// Adds the weapon to the player's weapon inventory
+		EquipmentInventoryArray[LocalAvailableSlotIndex] = NewEquipment;
+
+		// Sets the active weapon index to the slot the picked-up weapon was added to 
+		ActiveEquipmentSlotIndex = LocalAvailableSlotIndex;
+
+		// Calls the player character to attach this newly added equipment to itself.
+		NewEquipment->AttachToActor(PlayerCharRef, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+
+		// Sets the equipment to be invisible in the game
+		NewEquipment->SetActorHiddenInGame(true);
+	}
+	else // If there is no available slot, then the player's currently active equipment will be swapped
+	{
+		// Declares an object ptr to the weapon slot that will be removed
+		TObjectPtr<AGPREquipmentBase> LocalEquipmentToRemove = EquipmentInventoryArray[ActiveEquipmentSlotIndex];
+
+		// Drops the player's currently active weapon
+		DropEquipment(LocalEquipmentToRemove);
+
+		// The player's currently active weapon slot will now be the new picked-up weapon
+		EquipmentInventoryArray[ActiveEquipmentSlotIndex] = NewEquipment;
+		
+		// Calls the player character to attach this newly added equipment to itself.
+		NewEquipment->AttachToActor(PlayerCharRef, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+
+		// Sets the equipment to be invisible in the game
+		NewEquipment->SetActorHiddenInGame(true);
+	}
 }
 
 void UGPRInventoryComponentBase::AddResourceToInventory(FGPRResourceDataBase& NewResource)
@@ -137,7 +179,21 @@ void UGPRInventoryComponentBase::CanAddWeaponToInventory(bool& bCanAddItem, int3
 
 void UGPRInventoryComponentBase::CanAddEquipmentToInventory(bool& bCanAddItem, int32& AvailableSlotIndex)
 {
-	
+	// Loop through each element of the weapons inventory array
+	for (int i = 0; i < MaxEquipmentInventorySize; ++i)
+	{
+		// Checks if the current element is empty.
+		if (!IsValid(EquipmentInventoryArray[i]))
+		{
+			// Returns true if there is an available slot in the inventory & gives the index of the available slot.
+			bCanAddItem = true;
+			AvailableSlotIndex = i;
+			return;
+		}
+	}
+
+	// If there is no available slot, returns false.
+	bCanAddItem = false;
 }
 
 void UGPRInventoryComponentBase::CanAddResourceToInventory(bool& bCanAddItem, int32& AvailableSlotIndex, const FGPRResourceDataBase& ResourceToAdd)
@@ -188,6 +244,26 @@ void UGPRInventoryComponentBase::DropWeapon(AGPRWeaponBase* WeaponToRemove)
 
 	WeaponToRemove->Destroy(); // After dropping the weapon in the world, the weapon the player was holding will be destroyed
 	WeaponInventoryArray[ActiveWeaponSlotIndex] = nullptr; // Free's up space in the slot the weapon was using
+}
+
+void UGPRInventoryComponentBase::DropEquipment(AGPREquipmentBase* EquipmentToRemove)
+{
+	// Loads the weapons pickup class to drop soft class ptr & stores the value in a subclass ptr
+	TSubclassOf<AGPREquipmentPickupBase> LocalEquipmentPickupClassToDrop = EquipmentToRemove->EquipmentPickupClassToDrop.LoadSynchronous();
+
+	// Declares & sets spawn params
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	/* Gets & stores a modified version of the player location which adds 50f to the player's forward vector
+	 * This makes the equipment drop in front of the player */
+	const FVector LocalSpawnLocation = PlayerCharRef->GetActorLocation() + PlayerCharRef->GetActorForwardVector() * 50.0f;
+	
+	// Spawns the pickup version of the removed equipment (player has swapped their equipment)
+	GetWorld()->SpawnActor<AGPREquipmentPickupBase>(LocalEquipmentPickupClassToDrop, LocalSpawnLocation, FRotator::ZeroRotator, SpawnParams);
+
+	EquipmentToRemove->Destroy(); // After dropping the equipment in the world, the equipment the player was holding will be destroyed
+	EquipmentInventoryArray[ActiveEquipmentSlotIndex] = nullptr; // Free's up space in the slot the equipment was using
 }
 
 void UGPRInventoryComponentBase::SetupCharacterReference()

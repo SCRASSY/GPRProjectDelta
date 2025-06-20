@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "GPREquipmentBase.generated.h"
 
+class AGPREquipmentPickupBase;
 class AGPRPlayerCharacter;
 class UGPREquipmentDataAssetBase;
 
@@ -35,4 +36,10 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TObjectPtr<UGPREquipmentDataAssetBase> EquipmentData;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSoftClassPtr<AGPREquipmentPickupBase> EquipmentPickupClassToDrop;
+
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<AGPRPlayerCharacter> OwningPlayerCharRef;
 };

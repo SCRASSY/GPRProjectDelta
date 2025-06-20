@@ -6,7 +6,7 @@
 #include "Engine/DataAsset.h"
 #include "GPREquipmentDataAssetBase.generated.h"
 
-UCLASS()
+UCLASS(BlueprintType)
 class GPRPROJECTDELTA_API UGPREquipmentDataAssetBase : public UDataAsset
 {
 	GENERATED_BODY()
@@ -18,7 +18,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	FText EquipmentDescription;
 	
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSoftObjectPtr<UTexture2D> EquipmentIcon;
 
 	UPROPERTY(EditDefaultsOnly)
