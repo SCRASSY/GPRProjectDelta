@@ -32,6 +32,10 @@
 		{
 			"Name": "Chooser",
 			"Enabled": true
+		},
+		{
+			"Name": "GameplayAbilities",
+			"Enabled": true
 		}
 	]
 }

@@ -3,12 +3,14 @@
 
 #include "Actors/Characters/GPRPlayerCharacter.h"
 #include "EnhancedInputComponent.h"
+#include "Actors/ActorComponents/GPRAbilitySystemComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Actors/ActorComponents/GPRInventoryComponentBase.h"
 #include "Actors/Equipment/GPREquipmentBase.h"
 #include "Actors/Weapons/GPRWeaponBase.h"
+#include "AttributeSets/GPRCharacterStatsAtrSet.h"
 #include "Components/SphereComponent.h"
 #include "Core/Controllers/GPRPrimaryPlayerControllerBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -30,6 +32,12 @@ AGPRPlayerCharacter::AGPRPlayerCharacter()
 	PlayerInteractionSphere->SetupAttachment(GetCapsuleComponent());
 
 	PlayerInventoryComponent = CreateDefaultSubobject<UGPRInventoryComponentBase>(TEXT("PlayerInventoryComponent"));
+
+	// GAS
+	AbilitySystemComp = CreateDefaultSubobject<UGPRAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+
+	// Attribute sets
+	CharacterStatsAtrSet = CreateDefaultSubobject<UGPRCharacterStatsAtrSet>(TEXT("CharacterStatsAttributeSet"));
 }
 
 // Called when the game starts or when spawned
@@ -42,6 +50,9 @@ void AGPRPlayerCharacter::BeginPlay()
 
 	// Gets a reference to the owning player character controller
 	PlayerControllerRef = Cast<AGPRPrimaryPlayerControllerBase>(GetController());
+
+	// Provides this character as the owner & avatar for the ability system component
+	AbilitySystemComp->InitAbilityActorInfo(this, this);
 }
 
 void AGPRPlayerCharacter::PlayerMove(const FInputActionValue& InputValue)
@@ -355,6 +366,11 @@ void AGPRPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	}
 }
 
+UAbilitySystemComponent* AGPRPlayerCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComp;
+}
+
 void AGPRPlayerCharacter::AttachAddedWeaponToCharacter(AGPRWeaponBase* NewWeapon)
 {
 	NewWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
@@ -368,12 +384,4 @@ UGPRInventoryComponentBase* AGPRPlayerCharacter::GetPlayerInventoryComponent()
 UCameraComponent* AGPRPlayerCharacter::GetPlayerCameraComponent()
 {
 	return PlayerCameraComponent;
-}
-
-void AGPRPlayerCharacter::ApplyHealthToCharacter(float HealthAmount)
-{
-	// Updates the player's health & clamps it to the max float value of the player's max health var
-	CurrentPlayerHealth = FMath::Clamp(CurrentPlayerHealth + HealthAmount, 0.0f, MaxPlayerHealth);
-
-	// Update UI
 }

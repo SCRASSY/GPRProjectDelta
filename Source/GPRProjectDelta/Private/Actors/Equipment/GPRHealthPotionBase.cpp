@@ -2,7 +2,6 @@
 
 
 #include "Actors/Equipment/GPRHealthPotionBase.h"
-#include "Actors/ActorComponents/GPRInventoryComponentBase.h"
 #include "Actors/Characters/GPRPlayerCharacter.h"
 #include "DataAssets/GPRHealingPotionDataAssetBase.h"
 
@@ -33,7 +32,7 @@ void AGPRHealthPotionBase::UseEquipment(AGPRPlayerCharacter* UsingPlayerCharacte
 	if (UGPRHealingPotionDataAssetBase* PotionData = Cast<UGPRHealingPotionDataAssetBase>(EquipmentData))
 	{
 		// Applies health to the player character
-		UsingPlayerCharacter->ApplyHealthToCharacter(PotionData->HealingAmount);
+		// NEED TO APPLY HEALTH TO CHARACTER
 
 		// 3. Destroy the potion actor
 		this->Destroy();

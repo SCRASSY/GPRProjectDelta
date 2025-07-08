@@ -4,30 +4,81 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemInterface.h"
 #include "GPRPlayerCharacter.generated.h"
 
-struct FInputActionValue;
+// -- Forward Declarations --
+class UGPRAbilitySystemComponent;
+class UGPRCharacterStatsAtrSet;
 class AGPRWeaponBase;
 class USphereComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
+class UInputComponent;
 class UGPRInventoryComponentBase;
 class AGPRPrimaryPlayerControllerBase;
+struct FInputActionValue;
 
-UCLASS()
-class GPRPROJECTDELTA_API AGPRPlayerCharacter : public ACharacter
+UCLASS(Config=Game)
+class GPRPROJECTDELTA_API AGPRPlayerCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
+	// -- Constructor --
 	AGPRPlayerCharacter();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+#pragma region Interfaces
+	UFUNCTION(BlueprintCallable, Category = "GAS")
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+#pragma endregion
+
+#pragma region Custom Functions
+	void AttachAddedWeaponToCharacter(AGPRWeaponBase* NewWeapon);
+	UGPRInventoryComponentBase* GetPlayerInventoryComponent();
+	UCameraComponent* GetPlayerCameraComponent();
+#pragma endregion
+
+#pragma region Properties
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bIsPlayerSprinting = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bIsPlayerCrouching = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float DefaultWalkSpeed = 250.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float DefaultSprintSpeed = 450.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float DefaultCrouchSpeed = 200.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float InteractableLineTraceDistance = 500.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TArray<TObjectPtr<AActor>> InteractableActorsInRangeArray;
+
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<AGPRPrimaryPlayerControllerBase> PlayerControllerRef;
+
+	// Character stats attribute set
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UGPRCharacterStatsAtrSet> CharacterStatsAtrSet;
+#pragma endregion
 	
+protected:
+#pragma region Function Overrides
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+#pragma endregion
+
+#pragma region Components
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USpringArmComponent> PlayerCameraSpringArmComponent;
 	
@@ -39,7 +90,14 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	TObjectPtr<UGPRInventoryComponentBase> PlayerInventoryComponent;
+#pragma endregion
 
+#pragma region Properties
+	// GAS
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="GAS")
+	TObjectPtr<UGPRAbilitySystemComponent> AbilitySystemComp;
+
+	// Input Actions
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
 	TObjectPtr<UInputAction> MoveAction;
 
@@ -75,89 +133,41 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
 	TObjectPtr<UInputAction> SwapEquipmentAction;
+#pragma endregion
 
-	// Enhanced input function bindings
-	UFUNCTION()	void PlayerMove(const FInputActionValue& InputValue);
-	UFUNCTION()	void PlayerLook(const FInputActionValue& InputValue);
-	UFUNCTION()	void PlayerStartJump(const FInputActionValue& InputValue);
-	UFUNCTION()	void PlayerStopJump(const FInputActionValue& InputValue);
-	UFUNCTION()	void PlayerSprint(const FInputActionValue& InputValue);
-	UFUNCTION()	void PlayerCrouch(const FInputActionValue& InputValue);
-	UFUNCTION()	void PlayerInteract(const FInputActionValue& InputValue);
-	UFUNCTION()	void PlayerSwapWeapons(const FInputActionValue& InputValue);
+#pragma region Custom Functions
+	UFUNCTION()
+	void SetupFunctionBindings();
+	
+	UFUNCTION()
+	const float GetInteractableActorDotProduct(const FVector& DirectionToActor);
+#pragma endregion
+
+#pragma region Function Bindings
+	// Delegate Bindings
+	UFUNCTION()
+	void OnComponentBeginOverlapInteractionSphere(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+												  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+												  const FHitResult& SweepResult);
+	UFUNCTION()
+	void OnComponentEndOverlapInteractionSphere(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+												UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	
+	// Input Callbacks
+	UFUNCTION() void PlayerMove(const FInputActionValue& InputValue);
+	UFUNCTION() void PlayerLook(const FInputActionValue& InputValue);
+	UFUNCTION() void PlayerStartJump(const FInputActionValue& InputValue);
+	UFUNCTION() void PlayerStopJump(const FInputActionValue& InputValue);
+	UFUNCTION() void PlayerSprint(const FInputActionValue& InputValue);
+	UFUNCTION() void PlayerCrouch(const FInputActionValue& InputValue);
+	UFUNCTION() void PlayerInteract(const FInputActionValue& InputValue);
+	UFUNCTION() void PlayerSwapWeapons(const FInputActionValue& InputValue);
 	UFUNCTION() void PlayerAttack(const FInputActionValue& InputValue);
 	UFUNCTION() void PlayerStopAttack(const FInputActionValue& InputValue);
 	UFUNCTION() void PlayerInventory(const FInputActionValue& InputValue);
 	UFUNCTION() void PlayerReloadWeapon(const FInputActionValue& InputValue);
 	UFUNCTION() void PlayerUseEquipment(const FInputActionValue& InputValue);
 	UFUNCTION() void PlayerSwapEquipment(const FInputActionValue& InputValue);
-
-	UFUNCTION()
-	void SetupFunctionBindings();
-
-	UFUNCTION()
-	const float GetInteractableActorDotProduct(const FVector& DirectionToActor);
-
-#pragma region // Function Bindings
-	UFUNCTION()
-	void OnComponentBeginOverlapInteractionSphere(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	                                              UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-	                                              const FHitResult& SweepResult);
-	
-	UFUNCTION()
-	void OnComponentEndOverlapInteractionSphere(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	                                            UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 #pragma endregion
-
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	UFUNCTION()
-	void AttachAddedWeaponToCharacter(AGPRWeaponBase* NewWeapon);
-
-	UFUNCTION()
-	UGPRInventoryComponentBase* GetPlayerInventoryComponent();
-
-	UFUNCTION()
-	UCameraComponent* GetPlayerCameraComponent();
-
-	void ApplyHealthToCharacter(float HealthAmount);
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	bool bIsPlayerSprinting = false;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	bool bIsPlayerCrouching = false;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float DefaultWalkSpeed = 250.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float DefaultSprintSpeed = 450.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float DefaultCrouchSpeed = 200.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float MaxPlayerHealth = 100.0f;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float CurrentPlayerHealth = MaxPlayerHealth;
-
-	// The angle at which the player needs to be looking at an object to interact with it
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float DefaultInteractableRadius = 2.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float InteractableLineTraceDistance = 500.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TArray<TObjectPtr<AActor>> InteractableActorsInRangeArray;
-
-	UPROPERTY(BlueprintReadWrite)
-	TObjectPtr<AGPRPrimaryPlayerControllerBase> PlayerControllerRef;
 };
