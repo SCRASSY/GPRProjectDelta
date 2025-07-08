@@ -12,6 +12,6 @@ class GPRPROJECTDELTA_API UGPRHealingPotionDataAssetBase : public UGPREquipmentD
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 HealingAmount;
 };

@@ -70,6 +70,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UGPRCharacterStatsAtrSet> CharacterStatsAtrSet;
 #pragma endregion
+
+#pragma region Components
+	// GAS
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="GAS")
+	TObjectPtr<UGPRAbilitySystemComponent> AbilitySystemComp;
+#pragma endregion
 	
 protected:
 #pragma region Function Overrides
@@ -90,13 +96,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	TObjectPtr<UGPRInventoryComponentBase> PlayerInventoryComponent;
+
 #pragma endregion
 
 #pragma region Properties
-	// GAS
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="GAS")
-	TObjectPtr<UGPRAbilitySystemComponent> AbilitySystemComp;
-
 	// Input Actions
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
 	TObjectPtr<UInputAction> MoveAction;

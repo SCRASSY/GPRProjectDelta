@@ -3,6 +3,7 @@
 
 #include "Actors/Equipment/GPRHealthPotionBase.h"
 #include "Actors/Characters/GPRPlayerCharacter.h"
+#include "AttributeSets/GPRCharacterStatsAtrSet.h"
 #include "DataAssets/GPRHealingPotionDataAssetBase.h"
 
 // Sets default values
@@ -29,10 +30,17 @@ void AGPRHealthPotionBase::UseEquipment(AGPRPlayerCharacter* UsingPlayerCharacte
 	// If the equipment data is not valid, this function will be terminated early
 	if (!EquipmentData) return;
 
+	// If the player character already has the max health, then this function will terminate early
+	if (OwningPlayerCharRef->CharacterStatsAtrSet->GetHealth() ==
+		OwningPlayerCharRef->CharacterStatsAtrSet->GetMaxHealth()) return;
+
 	if (UGPRHealingPotionDataAssetBase* PotionData = Cast<UGPRHealingPotionDataAssetBase>(EquipmentData))
 	{
+		OwningPlayerCharRef = UsingPlayerCharacter;
+		
 		// Applies health to the player character
 		// NEED TO APPLY HEALTH TO CHARACTER
+		AbilitySystemComp->TryActivateAbilityByClass(GameplayAbilityClassToUse);
 
 		// 3. Destroy the potion actor
 		this->Destroy();

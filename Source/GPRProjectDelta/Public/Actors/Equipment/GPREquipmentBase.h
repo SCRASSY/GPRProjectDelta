@@ -4,14 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "AbilitySystemInterface.h"
 #include "GPREquipmentBase.generated.h"
 
+class UGameplayAbility;
+class UAbilitySystemComponent;
 class AGPREquipmentPickupBase;
 class AGPRPlayerCharacter;
 class UGPREquipmentDataAssetBase;
 
 UCLASS()
-class GPRPROJECTDELTA_API AGPREquipmentBase : public AActor
+class GPRPROJECTDELTA_API AGPREquipmentBase : public AActor, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -24,10 +27,14 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void OnConstruction(const FTransform& Transform) override;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UStaticMeshComponent> EquipmentStaticMesh;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UAbilitySystemComponent> AbilitySystemComp;
+	
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -42,4 +49,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<AGPRPlayerCharacter> OwningPlayerCharRef;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<UGameplayAbility> GameplayAbilityClassToUse;
 };
