@@ -4,17 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "AbilitySystemInterface.h"
 #include "GPREquipmentBase.generated.h"
 
-class UGameplayAbility;
-class UAbilitySystemComponent;
+class UGameplayEffect;
 class AGPREquipmentPickupBase;
 class AGPRPlayerCharacter;
 class UGPREquipmentDataAssetBase;
 
 UCLASS()
-class GPRPROJECTDELTA_API AGPREquipmentBase : public AActor, public IAbilitySystemInterface
+class GPRPROJECTDELTA_API AGPREquipmentBase : public AActor
 {
 	GENERATED_BODY()
 
@@ -27,13 +25,9 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void OnConstruction(const FTransform& Transform) override;
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UStaticMeshComponent> EquipmentStaticMesh;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UAbilitySystemComponent> AbilitySystemComp;
 	
 public:
 	// Called every frame
@@ -41,9 +35,10 @@ public:
 
 	virtual void UseEquipment(AGPRPlayerCharacter* UsingPlayerCharacter);
 
+	// -- Properties --
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TObjectPtr<UGPREquipmentDataAssetBase> EquipmentData;
-
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TSoftClassPtr<AGPREquipmentPickupBase> EquipmentPickupClassToDrop;
 
@@ -51,5 +46,5 @@ public:
 	TObjectPtr<AGPRPlayerCharacter> OwningPlayerCharRef;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<UGameplayAbility> GameplayAbilityClassToUse;
+	TSubclassOf<UGameplayEffect> GameplayEffectClassToUse;
 };

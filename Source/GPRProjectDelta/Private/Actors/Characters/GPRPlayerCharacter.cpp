@@ -253,8 +253,12 @@ void AGPRPlayerCharacter::PlayerUseEquipment(const FInputActionValue& InputValue
 		// Uses this equipment
 		LocalSelectedEquipment->UseEquipment(this);
 
-		// Removes the reference to this used item as it is destroyed
-		GetPlayerInventoryComponent()->EquipmentInventoryArray[LocalActiveEquipmentSlotIndex] = nullptr;
+		// If the item was destroyed, then it will be removed from the inventory
+		if (!IsValid(LocalSelectedEquipment))
+		{
+			// Removes the reference to this used item as it is destroyed
+			GetPlayerInventoryComponent()->EquipmentInventoryArray[LocalActiveEquipmentSlotIndex] = nullptr;
+		}
 	}
 
 	// Loops through the equipment inventory array to see which next slot can be the active slot
@@ -303,13 +307,19 @@ void AGPRPlayerCharacter::PlayerSwapEquipment(const FInputActionValue& InputValu
 	}
 }
 
+void AGPRPlayerCharacter::PlayerDash(const FInputActionValue& InputValue)
+{
+	// Attempts to activate the player's dash ability
+	AbilitySystemComp->TryActivateAbilitiesByTag(CharacterDashAbilityTag.GetSingleTagContainer());
+}
+
 void AGPRPlayerCharacter::SetupFunctionBindings()
 {
 	PlayerInteractionSphere->OnComponentBeginOverlap.AddUniqueDynamic(this, &AGPRPlayerCharacter::OnComponentBeginOverlapInteractionSphere);
 	PlayerInteractionSphere->OnComponentEndOverlap.AddUniqueDynamic(this, &AGPRPlayerCharacter::OnComponentEndOverlapInteractionSphere);
 }
 
-const float AGPRPlayerCharacter::GetInteractableActorDotProduct(const FVector& DirectionToActor)
+float AGPRPlayerCharacter::GetInteractableActorDotProduct(const FVector& DirectionToActor)
 {
 	// Returns the dot product between the interactable actor & the player camera
 	return FVector::DotProduct(PlayerCameraComponent->GetForwardVector(), DirectionToActor);

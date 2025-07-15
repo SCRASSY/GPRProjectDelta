@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "GPREquipmentBase.h"
 #include "GPRHealthPotionBase.generated.h"
 
@@ -18,6 +19,10 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	// -- Properties --
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gameplay Tags")
+	FGameplayTag HealthPotionTag;
 
 public:
 	// Called every frame

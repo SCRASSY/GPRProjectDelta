@@ -5,9 +5,14 @@
 
 UGPRCharacterStatsAtrSet::UGPRCharacterStatsAtrSet()
 {
-	// Initial values
+	// -- Initialize values --
+	// Health
 	InitHealth(100.f);
 	InitMaxHealth(100.f);
+
+	// Stamina
+	InitStamina(100.f);
+	InitMaxStamina(100.f);
 }
 
 void UGPRCharacterStatsAtrSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -16,6 +21,12 @@ void UGPRCharacterStatsAtrSet::PreAttributeChange(const FGameplayAttribute& Attr
 	if (Attribute == GetHealthAttribute())
 	{
 		NewValue = FMath::Clamp(NewValue, 0.f, GetMaxHealth());
+	}
+
+	// Checks if the attribute being changed is the stamina attribute
+	if (Attribute == GetStaminaAttribute())
+	{
+		NewValue = FMath::Clamp(NewValue, 0.f, GetMaxStamina());
 	}
 
 	Super::PreAttributeChange(Attribute, NewValue);
@@ -30,5 +41,12 @@ void UGPRCharacterStatsAtrSet::PostAttributeChange(const FGameplayAttribute& Att
 	{
 		// Broadcasts the health changed event
 		OnHealthChanged.Broadcast(this);
+	}
+
+	// Checks if the attribute that changed was the stamina attributes
+	if (Attribute == GetStaminaAttribute() || Attribute == GetMaxStaminaAttribute())
+	{
+		// Broadcasts the stamina changed event
+		OnStaminaChanged.Broadcast(this);
 	}
 }

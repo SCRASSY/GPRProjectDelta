@@ -36,14 +36,32 @@ void AGPRHealthPotionBase::UseEquipment(AGPRPlayerCharacter* UsingPlayerCharacte
 
 	if (UGPRHealingPotionDataAssetBase* PotionData = Cast<UGPRHealingPotionDataAssetBase>(EquipmentData))
 	{
+		// Gets a reference to this equipment's owning player
 		OwningPlayerCharRef = UsingPlayerCharacter;
-		
-		// Applies health to the player character
-		// NEED TO APPLY HEALTH TO CHARACTER
-		AbilitySystemComp->TryActivateAbilityByClass(GameplayAbilityClassToUse);
 
-		// 3. Destroy the potion actor
-		this->Destroy();
+		// Gets a reference to the owning player's ability system component
+		if (TObjectPtr<UAbilitySystemComponent> PlayerASC = OwningPlayerCharRef->GetAbilitySystemComponent())
+		{
+			// Makes an effect spec handle for the healing effect
+			FGameplayEffectSpecHandle EffectSpecHandle = PlayerASC->MakeOutgoingSpec(GameplayEffectClassToUse, 1.0f, PlayerASC->MakeEffectContext());
+
+			// Valid check
+			if (EffectSpecHandle.IsValid())
+			{
+				// Declares a gameplay tag & heal amount var
+				//const FGameplayTag DataTag = FGameplayTag::RequestGameplayTag(FName("Data.HealingAmount"));
+				const float HealAmount = PotionData->HealingAmount;
+
+				// Sets effect spec handle magnitude value using this healing potions heal amount
+				EffectSpecHandle.Data->SetSetByCallerMagnitude(HealthPotionTag, HealAmount);
+
+				// Applies health to the player character
+				PlayerASC->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data);
+
+				// 3. Destroy the potion actor
+				this->Destroy();
+			}
+		}
 	}
 }
 

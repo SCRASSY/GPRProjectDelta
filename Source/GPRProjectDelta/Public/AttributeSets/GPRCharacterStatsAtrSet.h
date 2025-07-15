@@ -33,9 +33,17 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
 	FGameplayAttributeData MaxHealth;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
+	FGameplayAttributeData Stamina;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
+	FGameplayAttributeData MaxStamina;
+
 	// -- Accessors --
 	ATTRIBUTE_ACCESSORS(UGPRCharacterStatsAtrSet, Health);
 	ATTRIBUTE_ACCESSORS(UGPRCharacterStatsAtrSet, MaxHealth);
+	ATTRIBUTE_ACCESSORS(UGPRCharacterStatsAtrSet, Stamina);
+	ATTRIBUTE_ACCESSORS(UGPRCharacterStatsAtrSet, MaxStamina);
 
 	// -- Function Overrides --
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
@@ -44,4 +52,7 @@ public:
 	// -- Delegate Events --
 	UPROPERTY(BlueprintAssignable)
 	FAttributeChangedEvent OnHealthChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FAttributeChangedEvent OnStaminaChanged;
 };

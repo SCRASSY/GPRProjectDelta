@@ -136,6 +136,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
 	TObjectPtr<UInputAction> SwapEquipmentAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
+	TObjectPtr<UInputAction> DashAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gameplay Abilities")
+	FGameplayTag CharacterDashAbilityTag;
 #pragma endregion
 
 #pragma region Custom Functions
@@ -143,7 +149,7 @@ protected:
 	void SetupFunctionBindings();
 	
 	UFUNCTION()
-	const float GetInteractableActorDotProduct(const FVector& DirectionToActor);
+	float GetInteractableActorDotProduct(const FVector& DirectionToActor);
 #pragma endregion
 
 #pragma region Function Bindings
@@ -171,6 +177,7 @@ protected:
 	UFUNCTION() void PlayerReloadWeapon(const FInputActionValue& InputValue);
 	UFUNCTION() void PlayerUseEquipment(const FInputActionValue& InputValue);
 	UFUNCTION() void PlayerSwapEquipment(const FInputActionValue& InputValue);
+	UFUNCTION() void PlayerDash(const FInputActionValue& InputValue);
 #pragma endregion
 	
 };

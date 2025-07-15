@@ -2,7 +2,6 @@
 
 
 #include "Actors/Equipment/GPREquipmentBase.h"
-#include "AbilitySystemComponent.h"
 #include "DataAssets/GPREquipmentDataAssetBase.h"
 
 // Sets default values
@@ -13,15 +12,12 @@ AGPREquipmentBase::AGPREquipmentBase()
 
 	EquipmentStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("EquipmentStaticMesh"));
 	EquipmentStaticMesh->SetupAttachment(RootComponent);
-
-	AbilitySystemComp = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 }
 
 // Called when the game starts or when spawned
 void AGPREquipmentBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void AGPREquipmentBase::OnConstruction(const FTransform& Transform)
@@ -38,11 +34,6 @@ void AGPREquipmentBase::OnConstruction(const FTransform& Transform)
 			EquipmentStaticMesh->SetStaticMesh(EquipmentData->EquipmentStaticMesh.LoadSynchronous());
 		}
 	}
-}
-
-UAbilitySystemComponent* AGPREquipmentBase::GetAbilitySystemComponent() const
-{
-	return AbilitySystemComp;
 }
 
 void AGPREquipmentBase::UseEquipment(AGPRPlayerCharacter* UsingPlayerCharacter)
