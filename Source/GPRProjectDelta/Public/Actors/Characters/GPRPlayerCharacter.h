@@ -82,6 +82,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	virtual void Landed(const FHitResult& Hit) override;
 #pragma endregion
 
 #pragma region Components
@@ -141,14 +142,20 @@ protected:
 	TObjectPtr<UInputAction> DashAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gameplay Abilities")
-	FGameplayTag CharacterDashAbilityTag;
+	TSubclassOf<UGameplayAbility> CharacterDashAbilityClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gameplay Abilities")
+	TSubclassOf<UGameplayAbility> CharacterThrustAbilityClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gameplay Effects")
+	TSubclassOf<UGameplayEffect> CharacterThrustRegenEffectClass;
+	
 #pragma endregion
 
 #pragma region Custom Functions
-	UFUNCTION()
 	void SetupFunctionBindings();
+	void SetupCharacterAbilities();
 	
-	UFUNCTION()
 	float GetInteractableActorDotProduct(const FVector& DirectionToActor);
 #pragma endregion
 

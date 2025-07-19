@@ -6,6 +6,8 @@
 #include "Actors/ActorComponents/GPRInventoryComponentBase.h"
 #include "Actors/Characters/GPRPlayerCharacter.h"
 #include "Actors/Equipment/GPREquipmentBase.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 // Sets default values
 AGPREquipmentPickupBase::AGPREquipmentPickupBase()
@@ -34,26 +36,33 @@ void AGPREquipmentPickupBase::Interact(AActor* InstigatedActor)
 	// Checks if the actor that interacted with this class is a player character
 	if (AGPRPlayerCharacter* LocalPlayerCharRef = Cast<AGPRPlayerCharacter>(InstigatedActor))
 	{
-		// If the weapon class is null, then this function will be terminated
+		// If the equipment class is null, then this function will be terminated
 		if (EquipmentClassToSpawn.IsNull()) return;
 		
-		// Loads the reference to the weapon class to spawn
+		// Loads the reference to the equipment class to spawn
 		TSubclassOf<AGPREquipmentBase> LocalWeaponToSpawn = EquipmentClassToSpawn.LoadSynchronous();
 
 		// Declares & sets spawn params
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-		// Spawns a weapon into the world, which will be instantly attached to the player character who picked-ip this weapon
+		// Spawns an equipment into the world, which will be instantly attached to the player character who picked up this equipment
 		TObjectPtr<AGPREquipmentBase> LocalSpawnedEquipment = GetWorld()->SpawnActor<AGPREquipmentBase>(LocalWeaponToSpawn, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 
-		// Sets the spawned weapons owning player to be the player which picked up this weapon
+		// Sets the spawned equipments owning player to be the player which picked up this equipment
 		LocalSpawnedEquipment->OwningPlayerCharRef = LocalPlayerCharRef;
 		
-		// Adds this spawned weapon to the player's inventory
+		// Adds this spawned equipment to the player's inventory
 		LocalPlayerCharRef->GetPlayerInventoryComponent()->AddEquipmentToInventory(LocalSpawnedEquipment);
 
-		// When this weapon is picked up, destroy it.
+		// Plays a pickup sound effect if there is a valid sound cue
+		if (IsValid(EquipmentPickupSFX))
+		{
+			// Plays this sound effect
+			UGameplayStatics::PlaySoundAtLocation(this, EquipmentPickupSFX, GetActorLocation());
+		}
+
+		// When this equipment is picked up, destroy it.
 		this->Destroy();
 	}
 }

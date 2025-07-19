@@ -53,6 +53,9 @@ void AGPRPlayerCharacter::BeginPlay()
 
 	// Provides this character as the owner & avatar for the ability system component
 	AbilitySystemComp->InitAbilityActorInfo(this, this);
+
+	// Sets up all the character's abilities
+	SetupCharacterAbilities();
 }
 
 void AGPRPlayerCharacter::PlayerMove(const FInputActionValue& InputValue)
@@ -91,12 +94,34 @@ void AGPRPlayerCharacter::PlayerLook(const FInputActionValue& InputValue)
 
 void AGPRPlayerCharacter::PlayerStartJump(const FInputActionValue& InputValue)
 {
-	this->Jump();
+	// If the character is already in the air, then the character will thrust instead of jumping
+	if (GetCharacterMovement()->IsFalling())
+	{
+		AbilitySystemComp->TryActivateAbilityByClass(CharacterThrustAbilityClass);
+
+		// Stops the character from regenerating thrust when using thrust
+		AbilitySystemComp->RemoveActiveEffectsWithGrantedTags(FGameplayTag::RequestGameplayTag(FName("Ability.Regen.Thrust"), true).GetSingleTagContainer());
+	}
+	else
+	{
+		this->Jump();
+	}
 }
 
 void AGPRPlayerCharacter::PlayerStopJump(const FInputActionValue& InputValue)
 {
 	this->StopJumping();
+
+	// Only stops the character from thrusting if they are in the air
+	if (GetCharacterMovement()->IsFalling())
+	{
+		// Declares a gameplay tag & event data to be used to call a gameplay event
+		FGameplayTag ThrustEventTag = FGameplayTag::RequestGameplayTag(FName("Ability.CharacterThrust.Cancel"), true);
+		FGameplayEventData ThrustEventData;
+
+		// Calls a gameplay event which stops the character from thrusting
+		AbilitySystemComp->HandleGameplayEvent(ThrustEventTag, &ThrustEventData);
+	}
 }
 
 void AGPRPlayerCharacter::PlayerSprint(const FInputActionValue& InputValue)
@@ -310,13 +335,32 @@ void AGPRPlayerCharacter::PlayerSwapEquipment(const FInputActionValue& InputValu
 void AGPRPlayerCharacter::PlayerDash(const FInputActionValue& InputValue)
 {
 	// Attempts to activate the player's dash ability
-	AbilitySystemComp->TryActivateAbilitiesByTag(CharacterDashAbilityTag.GetSingleTagContainer());
+	AbilitySystemComp->TryActivateAbilityByClass(CharacterDashAbilityClass);
 }
 
 void AGPRPlayerCharacter::SetupFunctionBindings()
 {
 	PlayerInteractionSphere->OnComponentBeginOverlap.AddUniqueDynamic(this, &AGPRPlayerCharacter::OnComponentBeginOverlapInteractionSphere);
 	PlayerInteractionSphere->OnComponentEndOverlap.AddUniqueDynamic(this, &AGPRPlayerCharacter::OnComponentEndOverlapInteractionSphere);
+}
+
+void AGPRPlayerCharacter::SetupCharacterAbilities()
+{
+	// Checks if there is an assigned character dash ability class
+	if (CharacterDashAbilityClass)
+	{
+		// Gives this player the dash ability
+		FGameplayAbilitySpec CharacterDashAbilitySpec(CharacterDashAbilityClass, 1, -1);
+		AbilitySystemComp->GiveAbility(CharacterDashAbilitySpec);
+	}
+
+	// Checks if there is an assigned character thrust ability class
+	if (CharacterThrustAbilityClass)
+	{
+		// Gives this player the thrust ability
+		FGameplayAbilitySpec ThrustAbilitySpec(CharacterThrustAbilityClass, 1, -1);
+		AbilitySystemComp->GiveAbility(ThrustAbilitySpec);
+	}
 }
 
 float AGPRPlayerCharacter::GetInteractableActorDotProduct(const FVector& DirectionToActor)
@@ -373,6 +417,21 @@ void AGPRPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AGPRPlayerCharacter::PlayerReloadWeapon);
 		EnhancedInputComponent->BindAction(UseEquipmentAction, ETriggerEvent::Started, this, &AGPRPlayerCharacter::PlayerUseEquipment);
 		EnhancedInputComponent->BindAction(SwapEquipmentAction, ETriggerEvent::Started, this, &AGPRPlayerCharacter::PlayerSwapEquipment);
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &AGPRPlayerCharacter::PlayerDash);
+	}
+}
+
+void AGPRPlayerCharacter::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+	UE_LOG(LogTemp, Warning, TEXT("Landed"));
+
+	// Will start regenerating the character's thrust levels only if they don't already have a regen thrust tag
+	if (!AbilitySystemComp->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(FName("Ability.Regen.Thrust"), true)))
+	{
+		// When the character has landed, the thrust regen gameplay effect will be applied to this character
+		FGameplayEffectContextHandle EffectContext = AbilitySystemComp->MakeEffectContext();
+		AbilitySystemComp->ApplyGameplayEffectToSelf(CharacterThrustRegenEffectClass.GetDefaultObject(), 1, EffectContext);
 	}
 }
 

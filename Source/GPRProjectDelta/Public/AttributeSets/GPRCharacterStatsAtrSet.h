@@ -39,15 +39,24 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
 	FGameplayAttributeData MaxStamina;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
+	FGameplayAttributeData Thrust;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
+	FGameplayAttributeData MaxThrust;
+
 	// -- Accessors --
 	ATTRIBUTE_ACCESSORS(UGPRCharacterStatsAtrSet, Health);
 	ATTRIBUTE_ACCESSORS(UGPRCharacterStatsAtrSet, MaxHealth);
 	ATTRIBUTE_ACCESSORS(UGPRCharacterStatsAtrSet, Stamina);
 	ATTRIBUTE_ACCESSORS(UGPRCharacterStatsAtrSet, MaxStamina);
+	ATTRIBUTE_ACCESSORS(UGPRCharacterStatsAtrSet, Thrust);
+	ATTRIBUTE_ACCESSORS(UGPRCharacterStatsAtrSet, MaxThrust);
 
 	// -- Function Overrides --
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
+	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 
 	// -- Delegate Events --
 	UPROPERTY(BlueprintAssignable)
@@ -55,4 +64,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FAttributeChangedEvent OnStaminaChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FAttributeChangedEvent OnThrustChanged;
 };
