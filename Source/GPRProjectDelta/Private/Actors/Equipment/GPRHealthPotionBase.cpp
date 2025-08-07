@@ -27,12 +27,14 @@ void AGPRHealthPotionBase::Tick(float DeltaTime)
 
 void AGPRHealthPotionBase::UseEquipment(AGPRPlayerCharacter* UsingPlayerCharacter)
 {
-	// If the equipment data is not valid, this function will be terminated early
-	if (!EquipmentData) return;
+	if (!EquipmentData && !OwningPlayerCharRef) return;
 
+	// Gets a reference to the character's stats attribute set
+	const TObjectPtr<UGPRCharacterStatsAtrSet> CharacterStatsAtrSet = UsingPlayerCharacter->CharacterStatsAtrSet;
+	if (!CharacterStatsAtrSet) return;
+	
 	// If the player character already has the max health, then this function will terminate early
-	if (OwningPlayerCharRef->CharacterStatsAtrSet->GetHealth() ==
-		OwningPlayerCharRef->CharacterStatsAtrSet->GetMaxHealth()) return;
+	if (CharacterStatsAtrSet->GetHealth() == CharacterStatsAtrSet->GetMaxHealth()) return;
 
 	if (UGPRHealingPotionDataAssetBase* PotionData = Cast<UGPRHealingPotionDataAssetBase>(EquipmentData))
 	{
